@@ -3,7 +3,7 @@ session_start();
 
 	session_unset('username');
 	session_unset('password');
-
+	session_unset('nomcli');
 	header('location: index.php');
 ?>
 

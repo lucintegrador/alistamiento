@@ -7,19 +7,25 @@
 
 <?php
 session_start();
+require_once('logeado.php'); 
 require_once('db.php'); 
 
-  unset($_SESSION['productos']);
-  unset($_SESSION['contador']);
-  unset($_SESSION['cliente']);
+unset($_SESSION['productos']);
+unset($_SESSION['contador']);
+unset($_SESSION['cliente']);
 
 $info = array('Database'=>$basedatos, 'UID'=>$usuario, 'PWD'=>$pass); 
-$conexion = sqlsrv_connect($servidor, $info);  
-$nomcliente = $_GET['nomcli'];
+$conexion = sqlsrv_connect($servidor, $info); 
+if(isset($_SESSION['nomcli'])){
+	$nomcliente = $_SESSION['nomcli'];
+}else{	
+	$nomcliente = $_GET['nomcli'];
+	$_SESSION['nomcli'] = $nomcliente;
+}
 $cliente = $_GET['id']; 
 if(!$conexion){
 die( print_r( sqlsrv_errors(), true));
- }
+}
 
 $query1 = "UPDATE so_hist set so_us_id = '".$_SESSION["usid"]."', so_status ='AL' WHERE so_cm_id = '".$cliente."' AND so_status = 'TX'";
 sqlsrv_query($conexion, $query1);

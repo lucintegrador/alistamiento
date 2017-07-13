@@ -7,7 +7,9 @@
 
 <?php
 session_start();
+require_once('logeado.php'); 
 require_once('db.php');
+unset($_SESSION['nomcli']);
 $usid = $_SESSION["usid"]; 
 $info = array('Database'=>$basedatos, 'UID'=>$usuario, 'PWD'=>$pass); 
 $conexion = sqlsrv_connect($servidor, $info);  

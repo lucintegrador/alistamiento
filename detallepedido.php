@@ -4,11 +4,12 @@ $productos = [];
 $contador = 0;
 $cliente = "";
 $numorden = "";
-$ord = $_GET['numord'];
+$ord = "";
 $ordencompra = $_GET['id']; 
 require_once('modelo/Producto.php'); 
 require_once('modelo/Medida.php'); 
 if ( ! session_id() ) @ session_start();
+require_once('logeado.php'); 
 if (!isset($_SESSION['productos'])){
   $info = array('Database'=>$basedatos, 'UID'=>$usuario, 'PWD'=>$pass); 
   $conexion = sqlsrv_connect($servidor, $info); 
@@ -65,7 +66,7 @@ if (!isset($_SESSION['productos'])){
   }
 
   $query2 = "SELECT *
-  FROM (SELECT sod_pt_id, sod_qty_ord, pt_desc, mar_desc, sod_status,so_cm_id      
+  FROM (SELECT so_ped, sod_pt_id, sod_qty_ord, pt_desc, mar_desc, sod_status,so_cm_id      
   FROM so_hist, sod_det, pt_mstr, mar_mstr
   Where so_status = 'AL'
   AND sod_so_id = so_id 
@@ -73,10 +74,20 @@ if (!isset($_SESSION['productos'])){
   AND pt_mar_id = mar_id
   AND so_id = '".$ordencompra."'
   and sod_qty_pick is null) AS TM
-  LEFT JOIN alm_mstr ON alm_mstr.alm_pt_id = TM.sod_pt_id";
+  LEFT JOIN alm_mstr ON alm_mstr.alm_pt_id = TM.sod_pt_id
+  ORDER BY alm_ini";
+
+  $forma = 0;
+  $pasilloAnt = "";  
+  $pasilloAct = "";
+  $iteraini = 0;
+  $iterafin = 0; 
+  $t1 = array();
+
   $registros2 = sqlsrv_query($conexion, $query2);
   $cliente = "";
   while($row2 = sqlsrv_fetch_object($registros2)){
+    $ord = $row2->so_ped;
     $cliente = $row2->so_cm_id;
     $medidatmp = new Medida($row2->sod_pt_id,0,0);
     for ($i=0; $i < count($medidas); $i++) { 
@@ -89,9 +100,42 @@ if (!isset($_SESSION['productos'])){
 
     //$numorden = $row2->so_id;
     $tmp = new Producto($row2->alm_ini,$row2->alm_fin,$row2->sod_pt_id,$row2->pt_desc,$row2->sod_qty_ord,$medidatmp);
-    array_push($productos,$tmp);
+
+    $pasilloAct = substr($row2->alm_ini, 0, 1);
+
+    if ($row2->alm_ini == "") {
+      array_push($productos, $tmp);
+    }else{
+      if ($pasilloAct != $pasilloAnt) {
+        if ($forma == 0) {
+          for ($i=0; $i < count($t1); $i++) { 
+            array_push($productos, $t1[$i]);
+          } 
+        }else{
+          for ($i=count($t1)-1; $i >= 0; $i--) { 
+            array_push($productos, $t1[$i]);
+          }
+        }
+        if (count($t1)>0) {
+          $forma = 1 - $forma;
+        }
+        
+        $t1 = array();
+        $pasilloAnt = $pasilloAct;
+      }
+      array_push($t1,$tmp);  
+    }
   }
-  
+   if ($forma == 0) {
+        for ($i=0; $i < count($t1); $i++) { 
+          array_push($productos, $t1[$i]);
+        } 
+      }else{
+        for ($i=count($t1)-1; $i >= 0; $i--) { 
+          array_push($productos, $t1[$i]);
+        }
+      }
+
   $_SESSION['productos'] = $productos ;
   $_SESSION['contador'] = $contador; 
   $_SESSION['cliente'] = $cliente; 
@@ -126,8 +170,10 @@ window.name=self.pageYOffset || (document.documentElement.scrollTop+document.bod
 
 function myFunction(orden,  producto, cnt, ord) {
         var cantidad = prompt("Porfavor ingresar la cantidad", cnt );
-        
-        if (cantidad != null) {
+        if(cantidad == ""){
+			cantidad = 0;
+		}
+		if (cantidad != null) {
           window.location.href = "alistar.php?id=" + orden + "&pt=" + producto + "&cnt=" + cantidad + "&ord=" + ord;
         }
     }
