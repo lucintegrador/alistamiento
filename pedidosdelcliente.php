@@ -13,6 +13,7 @@ require_once('db.php');
 unset($_SESSION['productos']);
 unset($_SESSION['contador']);
 unset($_SESSION['cliente']);
+unset($_SESSION['ordenc']);
 
 $info = array('Database'=>$basedatos, 'UID'=>$usuario, 'PWD'=>$pass); 
 $conexion = sqlsrv_connect($servidor, $info); 
@@ -65,7 +66,7 @@ $registros2 = sqlsrv_query($conexion, $query2);
                    				$estilo = "alistado";
                  				}
                 				echo "<tr class='".$estilo."'>";
-                				echo "<td><a href='detallepedido.php?id=".$row2->so_id."&numord=".$row2->so_ped."'>".$row2->so_ped."</a></td>" ;
+                				echo "<td><a href='detallepedido.php?id=".$row2->so_id."'>".$row2->so_ped."</a></td>" ;
                                 echo "<td><center>".$row2->faltantes."</center></td>";
                                 echo "<td><center>".$row2->so_type."</center></td>";
                                 echo "</tr>";  

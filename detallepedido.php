@@ -1,4 +1,8 @@
 <?php 
+require_once('modelo/Producto.php'); 
+require_once('modelo/Medida.php'); 
+if ( ! session_id() ) @ session_start();
+require_once('logeado.php'); 
 require_once('db.php'); 
 $productos = [];
 $contador = 0;
@@ -6,10 +10,9 @@ $cliente = "";
 $numorden = "";
 $ord = "";
 $ordencompra = $_GET['id']; 
-require_once('modelo/Producto.php'); 
-require_once('modelo/Medida.php'); 
-if ( ! session_id() ) @ session_start();
-require_once('logeado.php'); 
+if(isset($_SESSION['ordenc'])){
+	$ord = $_SESSION['ordenc'];
+}
 if (!isset($_SESSION['productos'])){
   $info = array('Database'=>$basedatos, 'UID'=>$usuario, 'PWD'=>$pass); 
   $conexion = sqlsrv_connect($servidor, $info); 
@@ -139,13 +142,11 @@ if (!isset($_SESSION['productos'])){
   $_SESSION['productos'] = $productos ;
   $_SESSION['contador'] = $contador; 
   $_SESSION['cliente'] = $cliente; 
-  $_SESSION['numord'] = $ord;
- 
+  $_SESSION['ordenc'] = (string)$ord; 
 }else{
   $productos = $_SESSION['productos'];
   $contador = $_SESSION['contador'];
   $cliente =  $_SESSION['cliente'];
-  $ord = $_SESSION['numord'];
 }
 
 ?>
@@ -168,13 +169,13 @@ window.onunload=function(){
 window.name=self.pageYOffset || (document.documentElement.scrollTop+document.body.scrollTop);
 }
 
-function myFunction(orden,  producto, cnt, ord) {
+function myFunction(orden,  producto, cnt) {
         var cantidad = prompt("Porfavor ingresar la cantidad", cnt );
         if(cantidad == ""){
 			cantidad = 0;
 		}
 		if (cantidad != null) {
-          window.location.href = "alistar.php?id=" + orden + "&pt=" + producto + "&cnt=" + cantidad + "&ord=" + ord;
+          window.location.href = "alistar.php?id=" + orden + "&pt=" + producto + "&cnt=" + cantidad;
         }
     }
 </script>
@@ -191,7 +192,7 @@ function myFunction(orden,  producto, cnt, ord) {
     </article>
 
     <article class="col-md-3" style="color: white; margin-top: 15px;">
-      <h5 class="title"><?php echo "Orden de Compra: <p style='font-size:25px;'>$ord</p>"; ?></h5> <!-- $ordencompra no es el mismo dato-->
+      <h5 class="title"><?php echo "Orden de Compra: <p style='font-size:25px;'>".$ord."</p>"; ?></h5> <!-- $ordencompra no es el mismo dato-->
     </article>
 
     <article class="col-md-4" style="color: white; margin-top: 15px;">
@@ -296,7 +297,7 @@ function myFunction(orden,  producto, cnt, ord) {
             ?>
             
         </div> 
-        <?php echo "<center style='margin-top: -20px;'><button class= 'btn btn-info btn-block' onClick = 'myFunction(".$ordencompra.",".$productoactual->codigo. "," .$productoactual->cantidad.",".$ord.")'> Separar <span class='glyphicon glyphicon-shopping-cart' aria-hidden='true'></span>
+        <?php echo "<center style='margin-top: -20px;'><button class= 'btn btn-info btn-block' onClick = 'myFunction(".$ordencompra.",".$productoactual->codigo. "," .$productoactual->cantidad.")'> Separar <span class='glyphicon glyphicon-shopping-cart' aria-hidden='true'></span>
             </a>" ?> 
       </article>
       <?php 
@@ -305,7 +306,6 @@ function myFunction(orden,  producto, cnt, ord) {
           unset($_SESSION['productos']);
           unset($_SESSION['contador']);
           unset($_SESSION['cliente']);
-          unset($_SESSION['numord']);
         }
       ?>
   </section>  
